@@ -9,11 +9,15 @@ PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 30
 PLAYER_SPEED = 5
 
+BULLET_WIDTH = 4
+BULLET_HEIGHT = 12
+BULLET_SPEED = 8
+
 
 pygame.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption(".:[Space Assault]:.")
+pygame.display.set_caption("Space Assault")
 
 clock = pygame.time.Clock()
 
@@ -24,12 +28,25 @@ player = pygame.Rect(
     PLAYER_HEIGHT,
 )
 
+bullets = []
+
 running = True
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bullet = pygame.Rect(
+                    player.centerx - BULLET_WIDTH // 2,
+                    player.top - BULLET_HEIGHT,
+                    BULLET_WIDTH,
+                    BULLET_HEIGHT,
+                )
+
+                bullets.append(bullet)
 
     keys = pygame.key.get_pressed()
 
@@ -45,9 +62,17 @@ while running:
     if player.right > WIDTH:
         player.right = WIDTH
 
+    for bullet in bullets:
+        bullet.y -= BULLET_SPEED
+
+    bullets = [bullet for bullet in bullets if bullet.bottom > 0]
+
     screen.fill((10, 10, 30))
 
     pygame.draw.rect(screen, (50, 150, 255), player)
+
+    for bullet in bullets:
+        pygame.draw.rect(screen, (255, 255, 255), bullet)
 
     pygame.display.flip()
 
