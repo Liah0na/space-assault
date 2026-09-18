@@ -20,6 +20,8 @@ ENEMY_VERTICAL_GAP = 20
 ENEMY_ROWS = 3
 ENEMY_COLUMNS = 5
 
+ENEMY_SCORE = 100
+
 
 pygame.init()
 
@@ -27,6 +29,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space Assault")
 
 clock = pygame.time.Clock()
+
+font = pygame.font.Font(None, 32)
 
 player = pygame.Rect(
     (WIDTH - PLAYER_WIDTH) // 2,
@@ -36,8 +40,9 @@ player = pygame.Rect(
 )
 
 bullets = []
-
 enemies = []
+
+score = 0
 
 formation_width = (
     ENEMY_COLUMNS * ENEMY_WIDTH
@@ -112,6 +117,9 @@ while running:
             if bullet.colliderect(enemy):
                 bullets_to_remove.append(bullet)
                 enemies_to_remove.append(enemy)
+
+                score += ENEMY_SCORE
+
                 break
 
     for bullet in bullets_to_remove:
@@ -131,6 +139,9 @@ while running:
 
     for enemy in enemies:
         pygame.draw.rect(screen, (220, 70, 70), enemy)
+
+    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+    screen.blit(score_text, (20, 20))
 
     pygame.display.flip()
 
