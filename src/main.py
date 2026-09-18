@@ -103,6 +103,25 @@ while running:
 
     bullets = [bullet for bullet in bullets if bullet.bottom > 0]
 
+    # Check collisions between bullets and enemies.
+    bullets_to_remove = []
+    enemies_to_remove = []
+
+    for bullet in bullets:
+        for enemy in enemies:
+            if bullet.colliderect(enemy):
+                bullets_to_remove.append(bullet)
+                enemies_to_remove.append(enemy)
+                break
+
+    for bullet in bullets_to_remove:
+        if bullet in bullets:
+            bullets.remove(bullet)
+
+    for enemy in enemies_to_remove:
+        if enemy in enemies:
+            enemies.remove(enemy)
+
     screen.fill((10, 10, 30))
 
     pygame.draw.rect(screen, (50, 150, 255), player)
