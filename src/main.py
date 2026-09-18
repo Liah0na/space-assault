@@ -13,6 +13,13 @@ BULLET_WIDTH = 4
 BULLET_HEIGHT = 12
 BULLET_SPEED = 8
 
+ENEMY_WIDTH = 40
+ENEMY_HEIGHT = 25
+ENEMY_HORIZONTAL_GAP = 20
+ENEMY_VERTICAL_GAP = 20
+ENEMY_ROWS = 3
+ENEMY_COLUMNS = 5
+
 
 pygame.init()
 
@@ -29,6 +36,35 @@ player = pygame.Rect(
 )
 
 bullets = []
+
+enemies = []
+
+formation_width = (
+    ENEMY_COLUMNS * ENEMY_WIDTH
+    + (ENEMY_COLUMNS - 1) * ENEMY_HORIZONTAL_GAP
+)
+
+formation_start_x = (WIDTH - formation_width) // 2
+formation_start_y = 80
+
+for row in range(ENEMY_ROWS):
+    for column in range(ENEMY_COLUMNS):
+        enemy_x = formation_start_x + column * (
+            ENEMY_WIDTH + ENEMY_HORIZONTAL_GAP
+        )
+
+        enemy_y = formation_start_y + row * (
+            ENEMY_HEIGHT + ENEMY_VERTICAL_GAP
+        )
+
+        enemy = pygame.Rect(
+            enemy_x,
+            enemy_y,
+            ENEMY_WIDTH,
+            ENEMY_HEIGHT,
+        )
+
+        enemies.append(enemy)
 
 running = True
 
@@ -73,6 +109,9 @@ while running:
 
     for bullet in bullets:
         pygame.draw.rect(screen, (255, 255, 255), bullet)
+
+    for enemy in enemies:
+        pygame.draw.rect(screen, (220, 70, 70), enemy)
 
     pygame.display.flip()
 
