@@ -26,6 +26,11 @@ ENEMY_SCORE = 100
 ENEMY_SPEED = 2
 ENEMY_DROP = 20
 
+ENEMY_BULLET_WIDTH = 4
+ENEMY_BULLET_HEIGHT = 12
+ENEMY_BULLET_SPEED = 5
+ENEMY_SHOOT_INTERVAL = 60
+
 ENEMIES_DEFEATED_MESSAGE = "Enemies Defeated!"
 
 GAME_OVER_MESSAGE = "GAME OVER"
@@ -49,6 +54,7 @@ player = pygame.Rect(
 )
 
 bullets = []
+enemy_bullets = []
 enemies = []
 
 score = 0
@@ -56,9 +62,11 @@ enemy_direction = 1
 victory = False
 game_over = False
 
+enemy_shoot_timer = 0
+player_lives = 3
+
 formation_width = (
-    ENEMY_COLUMNS * ENEMY_WIDTH
-    + (ENEMY_COLUMNS - 1) * ENEMY_HORIZONTAL_GAP
+    ENEMY_COLUMNS * ENEMY_WIDTH + (ENEMY_COLUMNS - 1) * ENEMY_HORIZONTAL_GAP
 )
 
 formation_start_x = (WIDTH - formation_width) // 2
@@ -66,13 +74,9 @@ formation_start_y = 80
 
 for row in range(ENEMY_ROWS):
     for column in range(ENEMY_COLUMNS):
-        enemy_x = formation_start_x + column * (
-            ENEMY_WIDTH + ENEMY_HORIZONTAL_GAP
-        )
+        enemy_x = formation_start_x + column * (ENEMY_WIDTH + ENEMY_HORIZONTAL_GAP)
 
-        enemy_y = formation_start_y + row * (
-            ENEMY_HEIGHT + ENEMY_VERTICAL_GAP
-        )
+        enemy_y = formation_start_y + row * (ENEMY_HEIGHT + ENEMY_VERTICAL_GAP)
 
         enemy = pygame.Rect(
             enemy_x,
@@ -98,11 +102,7 @@ while running:
 
         if event.type == pygame.KEYDOWN:
 
-            if (
-                event.key == pygame.K_SPACE
-                and not victory
-                and not game_over
-            ):
+            if event.key == pygame.K_SPACE and not victory and not game_over:
                 bullet = pygame.Rect(
                     player.centerx - BULLET_WIDTH // 2,
                     player.top - BULLET_HEIGHT,
@@ -143,11 +143,11 @@ while running:
         for bullet in bullets:
             bullet.y -= BULLET_SPEED
 
-        bullets = [
-            bullet
-            for bullet in bullets
-            if bullet.bottom > 0
-        ]
+        for bullet in enemy_bullets:
+            bullet.y += ENEMY_BULLET_SPEED
+
+        bullets = [bullet for bullet in bullets if bullet.bottom > 0]
+        enemy_bullets = [bullet for bullet in enemy_bullets if bullet.top < HEIGHT]
 
         # -------------------------
         # Enemy movement
@@ -157,13 +157,9 @@ while running:
             enemy.x += ENEMY_SPEED * enemy_direction
 
         if enemies:
-            formation_left = min(
-                enemy.left for enemy in enemies
-            )
+            formation_left = min(enemy.left for enemy in enemies)
 
-            formation_right = max(
-                enemy.right for enemy in enemies
-            )
+            formation_right = max(enemy.right for enemy in enemies)
 
             if formation_right >= WIDTH:
                 enemy_direction = -1
@@ -179,12 +175,34 @@ while running:
                     enemy.left = max(enemy.left, 0)
                     enemy.y += ENEMY_DROP
 
+            # -------------------------
+            # Enemy shooting
+            # -------------------------
+
+            enemy_shoot_timer += 1
+
+            if enemy_shoot_timer >= ENEMY_SHOOT_INTERVAL:
+                enemy_shoot_timer = 0
+
+                if enemies:
+                    shooter = enemies[-1]
+
+                    enemy_bullet = pygame.Rect(
+                        shooter.centerx - ENEMY_BULLET_WIDTH // 2,
+                        shooter.bottom,
+                        ENEMY_BULLET_WIDTH,
+                        ENEMY_BULLET_HEIGHT,
+                    )
+
+                    enemy_bullets.append(enemy_bullet)
+
         # -------------------------
         # Bullet-enemy collisions
         # -------------------------
 
         bullets_to_remove = []
         enemies_to_remove = []
+        enemy_bullets_to_remove = []
 
         for bullet in bullets:
             for enemy in enemies:
@@ -197,9 +215,23 @@ while running:
 
                     break
 
+        for bullet in enemy_bullets:
+            if bullet.colliderect(player):
+                enemy_bullets_to_remove.append(bullet)
+                player_lives -= 1
+
+                if player_lives <= 0:
+                    game_over = True
+
+                break
+
         for bullet in bullets_to_remove:
             if bullet in bullets:
                 bullets.remove(bullet)
+
+        for bullet in enemy_bullets_to_remove:
+            if bullet in enemy_bullets:
+                enemy_bullets.remove(bullet)
 
         for enemy in enemies_to_remove:
             if enemy in enemies:
@@ -242,6 +274,13 @@ while running:
             bullet,
         )
 
+    for bullet in enemy_bullets:
+        pygame.draw.rect(
+            screen,
+            (255, 100, 100),
+            bullet,
+        )
+
     for enemy in enemies:
         pygame.draw.rect(
             screen,
@@ -255,6 +294,13 @@ while running:
         (255, 255, 255),
     )
 
+    lives_text = font.render(
+        f"Lives: {player_lives}",
+        True,
+        (255, 255, 255),
+    )
+
+    screen.blit(lives_text, (20, 50))
     screen.blit(score_text, (20, 20))
 
     # -------------------------
@@ -268,9 +314,7 @@ while running:
             (255, 255, 255),
         )
 
-        victory_rect = victory_text.get_rect(
-            center=(WIDTH // 2, HEIGHT // 2)
-        )
+        victory_rect = victory_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
         screen.blit(victory_text, victory_rect)
 
@@ -285,9 +329,7 @@ while running:
             (255, 255, 255),
         )
 
-        game_over_rect = game_over_text.get_rect(
-            center=(WIDTH // 2, HEIGHT // 2)
-        )
+        game_over_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
         screen.blit(game_over_text, game_over_rect)
 
