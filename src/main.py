@@ -238,6 +238,27 @@ while running:
                 enemies.remove(enemy)
 
         # -------------------------
+        # Enemy bullet-player collisions
+        # -------------------------
+
+        enemy_bullets_to_remove = []
+
+        for bullet in enemy_bullets:
+            if bullet.colliderect(player):
+                enemy_bullets_to_remove.append(bullet)
+
+                player_lives -= 1
+
+                if player_lives <= 0:
+                    game_over = True
+
+                break
+
+        for bullet in enemy_bullets_to_remove:
+            if bullet in enemy_bullets:
+                enemy_bullets.remove(bullet)
+
+        # -------------------------
         # Victory condition
         # -------------------------
 
