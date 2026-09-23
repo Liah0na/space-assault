@@ -1,40 +1,34 @@
 import pygame
 
-WIDTH = 800
-HEIGHT = 600
-FPS = 60
-
-PLAYER_WIDTH = 50
-PLAYER_HEIGHT = 30
-PLAYER_SPEED = 5
-PLAYER_INVULNERABILITY_TIME = 1500
-
-PLAYER_ZONE_HEIGHT = 80
-
-BULLET_WIDTH = 4
-BULLET_HEIGHT = 12
-BULLET_SPEED = 8
-
-ENEMY_WIDTH = 40
-ENEMY_HEIGHT = 25
-ENEMY_HORIZONTAL_GAP = 20
-ENEMY_VERTICAL_GAP = 20
-ENEMY_ROWS = 3
-ENEMY_COLUMNS = 5
-
-ENEMY_SCORE = 100
-
-ENEMY_SPEED = 2
-ENEMY_DROP = 20
-
-ENEMY_BULLET_WIDTH = 4
-ENEMY_BULLET_HEIGHT = 12
-ENEMY_BULLET_SPEED = 5
-ENEMY_SHOOT_INTERVAL = 60
-
-ENEMIES_DEFEATED_MESSAGE = "Enemies Defeated!"
-
-GAME_OVER_MESSAGE = "GAME OVER"
+from settings import (
+    WIDTH,
+    HEIGHT,
+    FPS,
+    PLAYER_WIDTH,
+    PLAYER_HEIGHT,
+    PLAYER_SPEED,
+    PLAYER_INVULNERABILITY_TIME,
+    PLAYER_ZONE_HEIGHT,
+    PLAYER_LIVES,
+    BULLET_WIDTH,
+    BULLET_HEIGHT,
+    BULLET_SPEED,
+    ENEMY_WIDTH,
+    ENEMY_HEIGHT,
+    ENEMY_HORIZONTAL_GAP,
+    ENEMY_VERTICAL_GAP,
+    ENEMY_ROWS,
+    ENEMY_COLUMNS,
+    ENEMY_SCORE,
+    ENEMY_SPEED,
+    ENEMY_DROP,
+    ENEMY_BULLET_WIDTH,
+    ENEMY_BULLET_HEIGHT,
+    ENEMY_BULLET_SPEED,
+    ENEMY_SHOOT_INTERVAL,
+    ENEMIES_DEFEATED_MESSAGE,
+    GAME_OVER_MESSAGE,
+)
 
 pygame.init()
 
@@ -64,7 +58,7 @@ victory = False
 game_over = False
 
 enemy_shoot_timer = 0
-player_lives = 3
+player_lives = PLAYER_LIVES
 player_invulnerable_until = 0
 
 formation_width = (
@@ -226,9 +220,7 @@ while running:
 
                     player_lives -= 1
 
-                    player_invulnerable_until = (
-                        current_time + PLAYER_INVULNERABILITY_TIME
-                    )
+                    player_invulnerable_until = current_time + PLAYER_INVULNERABILITY_TIME
 
                     if player_lives <= 0:
                         game_over = True
