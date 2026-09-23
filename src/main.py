@@ -7,6 +7,7 @@ FPS = 60
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 30
 PLAYER_SPEED = 5
+PLAYER_INVULNERABILITY_TIME = 1500
 
 PLAYER_ZONE_HEIGHT = 80
 
@@ -64,6 +65,7 @@ game_over = False
 
 enemy_shoot_timer = 0
 player_lives = 3
+player_invulnerable_until = 0
 
 formation_width = (
     ENEMY_COLUMNS * ENEMY_WIDTH + (ENEMY_COLUMNS - 1) * ENEMY_HORIZONTAL_GAP
@@ -204,6 +206,8 @@ while running:
         enemies_to_remove = []
         enemy_bullets_to_remove = []
 
+        current_time = pygame.time.get_ticks()
+
         for bullet in bullets:
             for enemy in enemies:
 
@@ -215,15 +219,21 @@ while running:
 
                     break
 
-        for bullet in enemy_bullets:
-            if bullet.colliderect(player):
-                enemy_bullets_to_remove.append(bullet)
-                player_lives -= 1
+        if current_time >= player_invulnerable_until:
+            for bullet in enemy_bullets:
+                if bullet.colliderect(player):
+                    enemy_bullets_to_remove.append(bullet)
 
-                if player_lives <= 0:
-                    game_over = True
+                    player_lives -= 1
 
-                break
+                    player_invulnerable_until = (
+                        current_time + PLAYER_INVULNERABILITY_TIME
+                    )
+
+                    if player_lives <= 0:
+                        game_over = True
+
+                    break
 
         for bullet in bullets_to_remove:
             if bullet in bullets:
@@ -243,16 +253,23 @@ while running:
 
         enemy_bullets_to_remove = []
 
-        for bullet in enemy_bullets:
-            if bullet.colliderect(player):
-                enemy_bullets_to_remove.append(bullet)
+        current_time = pygame.time.get_ticks()
 
-                player_lives -= 1
+        if current_time >= player_invulnerable_until:
+            for bullet in enemy_bullets:
+                if bullet.colliderect(player):
+                    enemy_bullets_to_remove.append(bullet)
 
-                if player_lives <= 0:
-                    game_over = True
+                    player_lives -= 1
 
-                break
+                    player_invulnerable_until = (
+                        current_time + PLAYER_INVULNERABILITY_TIME
+                    )
+
+                    if player_lives <= 0:
+                        game_over = True
+
+                    break
 
         for bullet in enemy_bullets_to_remove:
             if bullet in enemy_bullets:
