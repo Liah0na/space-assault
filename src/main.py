@@ -2,6 +2,8 @@ import pygame
 
 from player import Player
 
+from bullet import Bullet
+
 from settings import (
     WIDTH,
     HEIGHT,
@@ -89,11 +91,12 @@ while running:
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_SPACE and not victory and not game_over:
-                bullet = pygame.Rect(
+                bullet = Bullet(
                     player.rect.centerx - BULLET_WIDTH // 2,
                     player.rect.top - BULLET_HEIGHT,
                     BULLET_WIDTH,
                     BULLET_HEIGHT,
+                    -BULLET_SPEED,
                 )
 
                 bullets.append(bullet)
@@ -115,13 +118,13 @@ while running:
         # -------------------------
 
         for bullet in bullets:
-            bullet.y -= BULLET_SPEED
+            bullet.update()
 
         for bullet in enemy_bullets:
-            bullet.y += ENEMY_BULLET_SPEED
+            bullet.update()
 
-        bullets = [bullet for bullet in bullets if bullet.bottom > 0]
-        enemy_bullets = [bullet for bullet in enemy_bullets if bullet.top < HEIGHT]
+        bullets = [bullet for bullet in bullets if not bullet.is_off_screen(HEIGHT)]
+        enemy_bullets = [bullet for bullet in enemy_bullets if not bullet.is_off_screen(HEIGHT)]
 
         # -------------------------
         # Enemy movement
@@ -161,11 +164,12 @@ while running:
                 if enemies:
                     shooter = enemies[-1]
 
-                    enemy_bullet = pygame.Rect(
+                    enemy_bullet = Bullet(
                         shooter.centerx - ENEMY_BULLET_WIDTH // 2,
                         shooter.bottom,
                         ENEMY_BULLET_WIDTH,
                         ENEMY_BULLET_HEIGHT,
+                        ENEMY_BULLET_SPEED,
                     )
 
                     enemy_bullets.append(enemy_bullet)
@@ -183,7 +187,7 @@ while running:
         for bullet in bullets:
             for enemy in enemies:
 
-                if bullet.colliderect(enemy):
+                if bullet.rect.colliderect(enemy):
                     bullets_to_remove.append(bullet)
                     enemies_to_remove.append(enemy)
 
@@ -194,7 +198,7 @@ while running:
         if current_time >= player.invulnerable_until:
             for bullet in enemy_bullets:
 
-                if bullet.colliderect(player.rect):
+                if bullet.rect.colliderect(player.rect):
                     enemy_bullets_to_remove.append(bullet)
 
                     player.take_damage(current_time)
@@ -226,7 +230,7 @@ while running:
 
         if current_time >= player.invulnerable_until:
             for bullet in enemy_bullets:
-                if bullet.colliderect(player):
+                if bullet.rect.colliderect(player.rect):
                     enemy_bullets_to_remove.append(bullet)
 
                     player_lives -= 1
@@ -269,18 +273,10 @@ while running:
     player.draw(screen)
 
     for bullet in bullets:
-        pygame.draw.rect(
-            screen,
-            (255, 255, 255),
-            bullet,
-        )
+        bullet.draw(screen, (255, 255, 255))
 
     for bullet in enemy_bullets:
-        pygame.draw.rect(
-            screen,
-            (255, 100, 100),
-            bullet,
-        )
+        bullet.draw(screen, (255, 100, 100))
 
     for enemy in enemies:
         pygame.draw.rect(
