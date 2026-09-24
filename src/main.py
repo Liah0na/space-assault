@@ -1,15 +1,12 @@
 import pygame
 
+from player import Player
+
 from settings import (
     WIDTH,
     HEIGHT,
     FPS,
-    PLAYER_WIDTH,
-    PLAYER_HEIGHT,
-    PLAYER_SPEED,
-    PLAYER_INVULNERABILITY_TIME,
     PLAYER_ZONE_HEIGHT,
-    PLAYER_LIVES,
     BULLET_WIDTH,
     BULLET_HEIGHT,
     BULLET_SPEED,
@@ -41,12 +38,7 @@ font = pygame.font.Font(None, 32)
 victory_font = pygame.font.Font(None, 64)
 game_over_font = pygame.font.Font(None, 72)
 
-player = pygame.Rect(
-    (WIDTH - PLAYER_WIDTH) // 2,
-    HEIGHT - PLAYER_HEIGHT - 20,
-    PLAYER_WIDTH,
-    PLAYER_HEIGHT,
-)
+player = Player()
 
 bullets = []
 enemy_bullets = []
@@ -58,8 +50,6 @@ victory = False
 game_over = False
 
 enemy_shoot_timer = 0
-player_lives = PLAYER_LIVES
-player_invulnerable_until = 0
 
 formation_width = (
     ENEMY_COLUMNS * ENEMY_WIDTH + (ENEMY_COLUMNS - 1) * ENEMY_HORIZONTAL_GAP
@@ -100,8 +90,8 @@ while running:
 
             if event.key == pygame.K_SPACE and not victory and not game_over:
                 bullet = pygame.Rect(
-                    player.centerx - BULLET_WIDTH // 2,
-                    player.top - BULLET_HEIGHT,
+                    player.rect.centerx - BULLET_WIDTH // 2,
+                    player.rect.top - BULLET_HEIGHT,
                     BULLET_WIDTH,
                     BULLET_HEIGHT,
                 )
@@ -118,19 +108,7 @@ while running:
         # Player movement
         # -------------------------
 
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            player.x -= PLAYER_SPEED
-
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            player.x += PLAYER_SPEED
-
-        if player.left < 0:
-            player.left = 0
-
-        if player.right > WIDTH:
-            player.right = WIDTH
+        player.update()
 
         # -------------------------
         # Bullet movement
@@ -213,16 +191,15 @@ while running:
 
                     break
 
-        if current_time >= player_invulnerable_until:
+        if current_time >= player.invulnerable_until:
             for bullet in enemy_bullets:
-                if bullet.colliderect(player):
+
+                if bullet.colliderect(player.rect):
                     enemy_bullets_to_remove.append(bullet)
 
-                    player_lives -= 1
+                    player.take_damage(current_time)
 
-                    player_invulnerable_until = current_time + PLAYER_INVULNERABILITY_TIME
-
-                    if player_lives <= 0:
+                    if player.lives <= 0:
                         game_over = True
 
                     break
@@ -247,18 +224,16 @@ while running:
 
         current_time = pygame.time.get_ticks()
 
-        if current_time >= player_invulnerable_until:
+        if current_time >= player.invulnerable_until:
             for bullet in enemy_bullets:
                 if bullet.colliderect(player):
                     enemy_bullets_to_remove.append(bullet)
 
                     player_lives -= 1
 
-                    player_invulnerable_until = (
-                        current_time + PLAYER_INVULNERABILITY_TIME
-                    )
+                    player.take_damage(current_time)
 
-                    if player_lives <= 0:
+                    if player.lives <= 0:
                         game_over = True
 
                     break
@@ -291,11 +266,7 @@ while running:
 
     screen.fill((10, 10, 30))
 
-    pygame.draw.rect(
-        screen,
-        (50, 150, 255),
-        player,
-    )
+    player.draw(screen)
 
     for bullet in bullets:
         pygame.draw.rect(
@@ -325,7 +296,7 @@ while running:
     )
 
     lives_text = font.render(
-        f"Lives: {player_lives}",
+        f"Lives: {player.lives}",
         True,
         (255, 255, 255),
     )
