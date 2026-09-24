@@ -1,7 +1,7 @@
 import pygame
 
 from player import Player
-
+from enemy import EnemyFormation
 from bullet import Bullet
 
 from settings import (
@@ -12,19 +12,7 @@ from settings import (
     BULLET_WIDTH,
     BULLET_HEIGHT,
     BULLET_SPEED,
-    ENEMY_WIDTH,
-    ENEMY_HEIGHT,
-    ENEMY_HORIZONTAL_GAP,
-    ENEMY_VERTICAL_GAP,
-    ENEMY_ROWS,
-    ENEMY_COLUMNS,
     ENEMY_SCORE,
-    ENEMY_SPEED,
-    ENEMY_DROP,
-    ENEMY_BULLET_WIDTH,
-    ENEMY_BULLET_HEIGHT,
-    ENEMY_BULLET_SPEED,
-    ENEMY_SHOOT_INTERVAL,
     ENEMIES_DEFEATED_MESSAGE,
     GAME_OVER_MESSAGE,
 )
@@ -44,37 +32,12 @@ player = Player()
 
 bullets = []
 enemy_bullets = []
-enemies = []
 
 score = 0
-enemy_direction = 1
 victory = False
 game_over = False
 
-enemy_shoot_timer = 0
-
-formation_width = (
-    ENEMY_COLUMNS * ENEMY_WIDTH + (ENEMY_COLUMNS - 1) * ENEMY_HORIZONTAL_GAP
-)
-
-formation_start_x = (WIDTH - formation_width) // 2
-formation_start_y = 80
-
-for row in range(ENEMY_ROWS):
-    for column in range(ENEMY_COLUMNS):
-        enemy_x = formation_start_x + column * (ENEMY_WIDTH + ENEMY_HORIZONTAL_GAP)
-
-        enemy_y = formation_start_y + row * (ENEMY_HEIGHT + ENEMY_VERTICAL_GAP)
-
-        enemy = pygame.Rect(
-            enemy_x,
-            enemy_y,
-            ENEMY_WIDTH,
-            ENEMY_HEIGHT,
-        )
-
-        enemies.append(enemy)
-
+formation = EnemyFormation()
 running = True
 
 while running:
@@ -114,6 +77,21 @@ while running:
         player.update()
 
         # -------------------------
+        # Enemy formation movement
+        # -------------------------
+
+        formation.update()
+
+        # -------------------------
+        # Enemy shooting
+        # -------------------------
+
+        enemy_bullet = formation.shoot()
+
+        if enemy_bullet is not None:
+            enemy_bullets.append(enemy_bullet)
+
+        # -------------------------
         # Bullet movement
         # -------------------------
 
@@ -123,56 +101,15 @@ while running:
         for bullet in enemy_bullets:
             bullet.update()
 
-        bullets = [bullet for bullet in bullets if not bullet.is_off_screen(HEIGHT)]
-        enemy_bullets = [bullet for bullet in enemy_bullets if not bullet.is_off_screen(HEIGHT)]
+        bullets = [
+            bullet for bullet in bullets
+            if not bullet.is_off_screen(HEIGHT)
+        ]
 
-        # -------------------------
-        # Enemy movement
-        # -------------------------
-
-        for enemy in enemies:
-            enemy.x += ENEMY_SPEED * enemy_direction
-
-        if enemies:
-            formation_left = min(enemy.left for enemy in enemies)
-
-            formation_right = max(enemy.right for enemy in enemies)
-
-            if formation_right >= WIDTH:
-                enemy_direction = -1
-
-                for enemy in enemies:
-                    enemy.right = min(enemy.right, WIDTH)
-                    enemy.y += ENEMY_DROP
-
-            elif formation_left <= 0:
-                enemy_direction = 1
-
-                for enemy in enemies:
-                    enemy.left = max(enemy.left, 0)
-                    enemy.y += ENEMY_DROP
-
-            # -------------------------
-            # Enemy shooting
-            # -------------------------
-
-            enemy_shoot_timer += 1
-
-            if enemy_shoot_timer >= ENEMY_SHOOT_INTERVAL:
-                enemy_shoot_timer = 0
-
-                if enemies:
-                    shooter = enemies[-1]
-
-                    enemy_bullet = Bullet(
-                        shooter.centerx - ENEMY_BULLET_WIDTH // 2,
-                        shooter.bottom,
-                        ENEMY_BULLET_WIDTH,
-                        ENEMY_BULLET_HEIGHT,
-                        ENEMY_BULLET_SPEED,
-                    )
-
-                    enemy_bullets.append(enemy_bullet)
+        enemy_bullets = [
+            bullet for bullet in enemy_bullets
+            if not bullet.is_off_screen(HEIGHT)
+        ]
 
         # -------------------------
         # Bullet-enemy collisions
@@ -180,20 +117,25 @@ while running:
 
         bullets_to_remove = []
         enemies_to_remove = []
-        enemy_bullets_to_remove = []
 
         current_time = pygame.time.get_ticks()
 
         for bullet in bullets:
-            for enemy in enemies:
+            for enemy in formation.enemies:
 
-                if bullet.rect.colliderect(enemy):
+                if bullet.rect.colliderect(enemy.rect):
                     bullets_to_remove.append(bullet)
                     enemies_to_remove.append(enemy)
 
                     score += ENEMY_SCORE
 
                     break
+
+        # -------------------------
+        # Enemy bullet-player collisions
+        # -------------------------
+
+        enemy_bullets_to_remove = []
 
         if current_time >= player.invulnerable_until:
             for bullet in enemy_bullets:
@@ -207,6 +149,10 @@ while running:
                         game_over = True
 
                     break
+
+        # -------------------------
+        # Remove bullets
+        # -------------------------
 
         for bullet in bullets_to_remove:
             if bullet in bullets:
@@ -216,51 +162,29 @@ while running:
             if bullet in enemy_bullets:
                 enemy_bullets.remove(bullet)
 
+        # -------------------------
+        # Remove enemies
+        # -------------------------
+
         for enemy in enemies_to_remove:
-            if enemy in enemies:
-                enemies.remove(enemy)
-
-        # -------------------------
-        # Enemy bullet-player collisions
-        # -------------------------
-
-        enemy_bullets_to_remove = []
-
-        current_time = pygame.time.get_ticks()
-
-        if current_time >= player.invulnerable_until:
-            for bullet in enemy_bullets:
-                if bullet.rect.colliderect(player.rect):
-                    enemy_bullets_to_remove.append(bullet)
-
-                    player_lives -= 1
-
-                    player.take_damage(current_time)
-
-                    if player.lives <= 0:
-                        game_over = True
-
-                    break
-
-        for bullet in enemy_bullets_to_remove:
-            if bullet in enemy_bullets:
-                enemy_bullets.remove(bullet)
+            if enemy in formation.enemies:
+                formation.enemies.remove(enemy)
 
         # -------------------------
         # Victory condition
         # -------------------------
 
-        if not enemies:
+        if not formation.enemies:
             victory = True
 
         # -------------------------
         # Game over condition
         # -------------------------
 
-        if enemies:
-            for enemy in enemies:
+        if formation.enemies:
+            for enemy in formation.enemies:
 
-                if enemy.bottom >= HEIGHT - PLAYER_ZONE_HEIGHT:
+                if enemy.rect.bottom >= HEIGHT - PLAYER_ZONE_HEIGHT:
                     game_over = True
                     break
 
@@ -278,12 +202,7 @@ while running:
     for bullet in enemy_bullets:
         bullet.draw(screen, (255, 100, 100))
 
-    for enemy in enemies:
-        pygame.draw.rect(
-            screen,
-            (220, 70, 70),
-            enemy,
-        )
+    formation.draw(screen)
 
     score_text = font.render(
         f"Score: {score}",
@@ -311,7 +230,9 @@ while running:
             (255, 255, 255),
         )
 
-        victory_rect = victory_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        victory_rect = victory_text.get_rect(
+            center=(WIDTH // 2, HEIGHT // 2)
+        )
 
         screen.blit(victory_text, victory_rect)
 
@@ -326,7 +247,9 @@ while running:
             (255, 255, 255),
         )
 
-        game_over_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        game_over_rect = game_over_text.get_rect(
+            center=(WIDTH // 2, HEIGHT // 2)
+        )
 
         screen.blit(game_over_text, game_over_rect)
 
