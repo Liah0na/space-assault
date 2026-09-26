@@ -1,108 +1,62 @@
-# Space Assault
+# Overview
 
-## Project Overview
+Space Assault is a 2D arcade-style space shooter where the player controls a spaceship and must destroy an enemy formation before the enemies reach the player's zone.
 
-Space Assault is a simple 2D arcade shooter developed as a CSE 310 course project.
+The player can move horizontally using the `A` and `D` keys or the left and right arrow keys. The player can shoot by pressing the `SPACE` key. Destroying enemies increases the score, while enemy projectiles can reduce the player's lives.
 
-The game is inspired by classic arcade games such as Space Invaders, with an additional mechanic where individual enemies can leave the formation, attack the player, and then return to their original formation.
+The enemy formation moves horizontally across the screen and moves downward when it reaches the edge. In addition to the regular formation movement, individual enemies can leave the formation and attack the player. During an attack, an enemy moves diagonally, changes direction when it reaches the edge of the screen, and eventually returns to the current formation position.
 
-The main goal of the project was to practice Python programming, object-oriented programming, game loops, collision detection, user input, and basic game development using Pygame.
+The player starts with three lives. After receiving damage, the player becomes temporarily invulnerable and visually blinks. The game ends when the player loses all lives, when the enemy formation reaches the player's zone, or when all enemies have been destroyed.
 
----
+The purpose of developing this software is to improve my skills as a software engineer by practicing Python programming, object-oriented programming, game loops, collision detection, event handling, state management, debugging, and code organization. I also wanted to gain practical experience developing an interactive application from an initial simple mechanic and gradually improving it through testing and refactoring.
 
-## Features
+[YouTube demonstration Space Assault](https://youtu.be/xdUzJs7DUKQ)
 
-### Player
+# Development Environment
 
-- Move left and right using the keyboard.
-- Supports both `A / D` and the arrow keys.
-- Shoot projectiles using the `SPACE` key.
-- The player has three lives.
-- Temporary invulnerability is activated after taking damage.
-- The player visually blinks while invulnerable.
+The project was developed using the following tools and technologies:
 
-### Enemy Formation
+- **Operating System:** Ubuntu 26.04.1 LTS
+- **Programming Language:** Python 3.13.15
+- **Game Library:** Pygame 2.6.1
+- **Graphics/Audio:** Pygame
+- **Code Editor:** Visual Studio Code
+- **Version Control:** Git
+- **Repository:** GitHub
+- **Python Environment:** pyenv and Python virtual environment (`.venv`)
 
-- Multiple enemies are organized into a formation.
-- The formation moves horizontally across the screen.
-- When the formation reaches an edge, it changes direction and moves downward.
-- Enemies can be destroyed by player bullets.
+The project uses Python and Pygame to create the game window, process keyboard input, manage the game loop, draw game objects, detect collisions, and play sound effects.
 
-### Individual Enemy Attacks
+The code is organized into separate modules according to their responsibilities:
 
-One of the main features of Space Assault is the individual enemy attack system.
+- `main.py` - Controls the main game loop and coordinates the game.
+- `settings.py` - Contains game configuration and constants.
+- `player.py` - Manages the player, movement, lives, damage, and invulnerability.
+- `bullet.py` - Provides the reusable bullet behavior for player and enemy projectiles.
+- `enemy.py` - Manages individual enemies, the enemy formation, enemy movement, attacks, and enemy projectiles.
 
-An available enemy can leave the formation and attack the player.
+This structure allows the project to remain simple while keeping different responsibilities separated and easier to maintain.
 
-During the attack:
+# Useful Websites
 
-- The enemy moves diagonally.
-- The initial horizontal direction is determined by the player's current position.
-- The enemy bounces when it reaches the edge of the screen.
-- The enemy eventually stops attacking.
-- The enemy returns to the current formation position.
-- The attacking enemy is displayed with a different color.
+The following websites were useful during the development of Space Assault:
 
-### Enemy Projectiles
+* [Pygame Documentation](https://www.pygame.org/docs/)
+* [Pygame Tutorials](https://www.pygame.org/wiki/tutorials)
+* [Python Documentation](https://docs.python.org/3/)
+* [Python Tutorial](https://docs.python.org/3/tutorial/)
 
-Enemies can also shoot projectiles toward the player.
+# Future Work
 
-If an enemy projectile hits the player:
+There are several improvements that could be added to Space Assault in the future:
 
-- The player loses a life.
-- Temporary invulnerability is activated.
-- The player visually blinks during the invulnerability period.
-
-### Score and Game States
-
-- The player receives points for destroying enemies.
-- The game displays the current score.
-- The game displays the player's remaining lives.
-- The player wins when all enemies are destroyed.
-- The game ends if the player loses all lives.
-- The game also ends if the enemy formation reaches the player's zone.
-
-### Audio
-
-A simple shooting sound effect is played when the player fires.
-
----
-
-## Technologies
-
-- Python
-- Pygame
-- Object-Oriented Programming
-- Git / GitHub
-
----
-
-## Controls
-
-| Key | Action |
-|---|---|
-| `A` | Move left |
-| `D` | Move right |
-| `←` | Move left |
-| `→` | Move right |
-| `SPACE` | Shoot |
-
----
-
-## Project Structure
-
-```text
-SpaceAssault/
-├── src/
-│   ├── main.py
-│   ├── settings.py
-│   ├── player.py
-│   ├── bullet.py
-│   └── enemy.py
-│
-├── assets/
-│   ├── images/
-│   └── sounds/
-│       └── player_shoot.wav
-│
-└── README.md
+* Add multiple enemy attack patterns to make enemy behavior less predictable.
+* Add multiple waves of enemies with increasing difficulty.
+* Add different enemy types with different movement and attack behaviors.
+* Improve the visual design by replacing the simple rectangles with spaceship and enemy sprites.
+* Add additional sound effects for shooting, explosions, player damage, victory, and Game Over.
+* Add background music and volume controls.
+* Add visual effects such as explosions, particles, and screen effects.
+* Add a restart option after the player wins or loses.
+* Add a high-score system.
+* Improve the user interface with a start screen and game instructions.
