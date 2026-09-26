@@ -101,14 +101,10 @@ while running:
         for bullet in enemy_bullets:
             bullet.update()
 
-        bullets = [
-            bullet for bullet in bullets
-            if not bullet.is_off_screen(HEIGHT)
-        ]
+        bullets = [bullet for bullet in bullets if not bullet.is_off_screen(HEIGHT)]
 
         enemy_bullets = [
-            bullet for bullet in enemy_bullets
-            if not bullet.is_off_screen(HEIGHT)
+            bullet for bullet in enemy_bullets if not bullet.is_off_screen(HEIGHT)
         ]
 
         # -------------------------
@@ -117,8 +113,6 @@ while running:
 
         bullets_to_remove = []
         enemies_to_remove = []
-
-        current_time = pygame.time.get_ticks()
 
         for bullet in bullets:
             for enemy in formation.enemies:
@@ -135,20 +129,19 @@ while running:
         # Enemy bullet-player collisions
         # -------------------------
 
+        current_time = pygame.time.get_ticks()
+
         enemy_bullets_to_remove = []
 
-        if current_time >= player.invulnerable_until:
-            for bullet in enemy_bullets:
+        for bullet in enemy_bullets:
 
-                if bullet.rect.colliderect(player.rect):
-                    enemy_bullets_to_remove.append(bullet)
+            if bullet.rect.colliderect(player.rect):
+                enemy_bullets_to_remove.append(bullet)
+                player.take_damage(current_time)
+                if player.lives <= 0:
+                    game_over = True
 
-                    player.take_damage(current_time)
-
-                    if player.lives <= 0:
-                        game_over = True
-
-                    break
+                break
 
         # -------------------------
         # Remove bullets
@@ -230,9 +223,7 @@ while running:
             (255, 255, 255),
         )
 
-        victory_rect = victory_text.get_rect(
-            center=(WIDTH // 2, HEIGHT // 2)
-        )
+        victory_rect = victory_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
         screen.blit(victory_text, victory_rect)
 
@@ -247,9 +238,7 @@ while running:
             (255, 255, 255),
         )
 
-        game_over_rect = game_over_text.get_rect(
-            center=(WIDTH // 2, HEIGHT // 2)
-        )
+        game_over_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
         screen.blit(game_over_text, game_over_rect)
 
