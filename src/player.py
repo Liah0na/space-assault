@@ -50,6 +50,15 @@ class Player:
         return True
 
     def draw(self, screen):
+
+        current_time = pygame.time.get_ticks()
+
+        # Parpadea mientras está invulnerable
+        if current_time < self.invulnerable_until:
+
+            if (current_time // 100) % 2 == 0:
+                return
+
         pygame.draw.rect(
             screen,
             (50, 150, 255),
