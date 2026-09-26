@@ -18,9 +18,13 @@ from settings import (
 )
 
 pygame.init()
+pygame.mixer.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space Assault")
+shoot_sound = pygame.mixer.Sound(
+    "assets/sounds/player_shoot.wav"
+)
 
 clock = pygame.time.Clock()
 
@@ -54,6 +58,9 @@ while running:
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_SPACE and not victory and not game_over:
+
+                shoot_sound.play()
+
                 bullet = Bullet(
                     player.rect.centerx - BULLET_WIDTH // 2,
                     player.rect.top - BULLET_HEIGHT,
