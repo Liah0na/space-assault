@@ -45,6 +45,7 @@ The following websites were useful during the development of Space Assault:
 * [Pygame Tutorials](https://www.pygame.org/wiki/tutorials)
 * [Python Documentation](https://docs.python.org/3/)
 * [Python Tutorial](https://docs.python.org/3/tutorial/)
+* [Assest and sources](https://simpleguics2pygame.readthedocs.io/en/latest/_static/links/snd_links.html)
 
 # Future Work
 
