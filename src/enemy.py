@@ -28,26 +28,26 @@ class Enemy:
             ENEMY_HEIGHT,
         )
 
-        # Current logical position inside the formation
         self.formation_x = x
         self.formation_y = y
 
-        # Attack state
         self.attacking = False
         self.returning = False
 
-        # Position where the current attack started
         self.attack_start_y = y
-
-        # Horizontal attack direction
         self.attack_direction = 1
 
-    def start_attack(self):
+    def start_attack(self, player_x):
+
         self.attacking = True
         self.returning = False
 
         self.attack_start_y = self.rect.y
-        self.attack_direction = 1
+
+        if player_x > self.rect.centerx:
+            self.attack_direction = 1
+        else:
+            self.attack_direction = -1
 
     def update_attack(self):
 
@@ -55,11 +55,12 @@ class Enemy:
 
             attack_speed = 3
 
-            # Move horizontally and vertically
-            self.rect.x += attack_speed * self.attack_direction
+            self.rect.x += (
+                attack_speed * self.attack_direction
+            )
+
             self.rect.y += attack_speed
 
-            # Bounce from the screen edges
             if self.rect.right >= WIDTH:
                 self.rect.right = WIDTH
                 self.attack_direction = -1
@@ -68,7 +69,6 @@ class Enemy:
                 self.rect.left = 0
                 self.attack_direction = 1
 
-            # Start returning after descending 180 pixels
             if self.rect.y >= self.attack_start_y + 180:
                 self.attacking = False
                 self.returning = True
@@ -81,21 +81,18 @@ class Enemy:
 
         return_speed = 4
 
-        # Move toward current formation X
         if self.rect.x < self.formation_x:
             self.rect.x += return_speed
 
         elif self.rect.x > self.formation_x:
             self.rect.x -= return_speed
 
-        # Move toward current formation Y
         if self.rect.y < self.formation_y:
             self.rect.y += return_speed
 
         elif self.rect.y > self.formation_y:
             self.rect.y -= return_speed
 
-        # Check if the enemy reached the formation
         if (
             abs(self.rect.x - self.formation_x) <= return_speed
             and abs(self.rect.y - self.formation_y) <= return_speed
@@ -106,6 +103,7 @@ class Enemy:
             self.returning = False
 
     def draw(self, screen):
+
         pygame.draw.rect(
             screen,
             (220, 70, 70),
@@ -119,6 +117,7 @@ class EnemyFormation:
         self.enemies = []
         self.direction = 1
         self.shoot_timer = 0
+        self.attack_timer = 0
 
         self._create_formation()
 
@@ -153,25 +152,42 @@ class EnemyFormation:
 
                 self.enemies.append(enemy)
 
-                # Temporary attack test
-                if row == 0 and column == 2:
-                    enemy.start_attack()
-
-    def update(self):
+    def update(self, player_x):
 
         for enemy in self.enemies:
 
-            # Keep the logical formation position moving.
             enemy.formation_x += ENEMY_SPEED * self.direction
 
             if enemy.attacking or enemy.returning:
                 enemy.update_attack()
 
             else:
-                # Normal enemies follow the formation.
                 enemy.rect.x = enemy.formation_x
 
         self._check_edges()
+
+    def start_attack(self, player_x):
+
+        if not self.enemies:
+            return
+
+        attacker = self.enemies[2]
+
+        if attacker.attacking or attacker.returning:
+            return
+
+        attacker.start_attack(player_x)
+
+    def update_attack(self, player_x):
+
+        self.attack_timer += 1
+
+        if self.attack_timer < 180:
+            return
+
+        self.attack_timer = 0
+
+        self.start_attack(player_x)
 
     def _check_edges(self):
 

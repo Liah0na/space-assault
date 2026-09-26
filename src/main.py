@@ -80,7 +80,11 @@ while running:
         # Enemy formation movement
         # -------------------------
 
-        formation.update()
+        # Enemy formation movement
+        formation.update(player.rect.centerx)
+
+        # Individual enemy attacks
+        formation.update_attack(player.rect.centerx)
 
         # -------------------------
         # Enemy shooting
