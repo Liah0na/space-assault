@@ -104,9 +104,14 @@ class Enemy:
 
     def draw(self, screen):
 
+        if self.attacking:
+            color = (255, 180, 50)
+        else:
+            color = (220, 70, 70)
+
         pygame.draw.rect(
             screen,
-            (220, 70, 70),
+            color,
             self.rect,
         )
 
@@ -168,15 +173,18 @@ class EnemyFormation:
 
     def start_attack(self, player_x):
 
-        if not self.enemies:
-            return
+            available_enemies = [
+                enemy
+                for enemy in self.enemies
+                if not enemy.attacking and not enemy.returning
+            ]
 
-        attacker = self.enemies[2]
+            if not available_enemies:
+                return
 
-        if attacker.attacking or attacker.returning:
-            return
+            attacker = available_enemies[0]
 
-        attacker.start_attack(player_x)
+            attacker.start_attack(player_x)
 
     def update_attack(self, player_x):
 
