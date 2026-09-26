@@ -39,18 +39,36 @@ class Enemy:
         # Position where the current attack started
         self.attack_start_y = y
 
+        # Horizontal attack direction
+        self.attack_direction = 1
+
     def start_attack(self):
         self.attacking = True
         self.returning = False
 
         self.attack_start_y = self.rect.y
+        self.attack_direction = 1
 
     def update_attack(self):
 
         if self.attacking:
 
-            self.rect.y += 3
+            attack_speed = 3
 
+            # Move horizontally and vertically
+            self.rect.x += attack_speed * self.attack_direction
+            self.rect.y += attack_speed
+
+            # Bounce from the screen edges
+            if self.rect.right >= WIDTH:
+                self.rect.right = WIDTH
+                self.attack_direction = -1
+
+            elif self.rect.left <= 0:
+                self.rect.left = 0
+                self.attack_direction = 1
+
+            # Start returning after descending 180 pixels
             if self.rect.y >= self.attack_start_y + 180:
                 self.attacking = False
                 self.returning = True
